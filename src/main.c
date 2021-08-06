@@ -12,13 +12,20 @@
 
 char nil[] = "nil";
 
+int S[stack_size];
+char unsigned Sp=0;
+char E[list_size];
+char C[one_code_size];
+char D[list_size];
+
+
 char *cdr_iter(char *list)
 {
   unsigned char depth=0;
   bool flag=0;
   if(index(list, '(') == NULL){ return list; }else{ list = index(list, '('); }
   while(list[0] != '\0'){
-    printf("depth:%d flag:%d %c\n", depth, flag, list[0]);
+    //printf("depth:%d flag:%d %c\n", depth, flag, list[0]);
     switch (list[0]){
     case '(':
       if(depth==1 && flag==1){ (list-1)[0]='('; return list=list-1; }
@@ -42,7 +49,7 @@ char *car_iter(char *list)
   bool flag=0;
   if(index(list, '(') == NULL){ return list; }else{ list = index(list, '('); }
   while(list[i] != '\0'){
-    printf("depth:%d flag:%d %c\n", depth, flag, list[i]);
+    //printf("depth:%d flag:%d %c\n", depth, flag, list[i]);
     switch (list[i]){
     case '(':
       if(depth==1 && flag==1){ list[0] = ' '; /* list[i-1]=')'; */ list[i] = '\0'; return list;}
@@ -89,28 +96,50 @@ char *cadr(char *list)
 {
   cdr(list);
   car(list);
+  return list;
 }
 
-char eval(char *list)
+char *cddr(char *list)
 {
-  char *op[list_size];
+  return cdr(cdr(list));
+}
+
+int eval(char *list)
+{
+
+  char op[list_size];
+  char val[list_size];
   strcpy(op, list);
+  strcpy(val, list);
   car(op);
+  cadr(val);
+
+  strcpy(op, strtok(op, " "));
+  strcpy(val, strtok(val, " "));
+
+  printf("op: %s val: %s Sp: %d\n", op, val, Sp);
 
   if(!strcmp(op, "push"))
     {
+      S[++Sp]+=atoi(val);
     }
   else if(!strcmp(op, "pop"))
     {
+      for(unsigned char i=atoi(val); i>0; i--)
+	printf("%d\n", S[Sp--]);
     }
   else if(!strcmp(op, "exch"))
     {
+      S[Sp] ^= S[atoi(val)];
+      S[atoi(val)] ^= S[Sp];
+      S[Sp] ^= S[atoi(val)];
     }
   else if(!strcmp(op, "match"))
     {
-    }
+     }
   else if(!strcmp(op, "add"))
     {
+      S[Sp] = S[Sp] + S[atoi(val)];
     }
   else if(!strcmp(op, "sub"))
     {
@@ -126,15 +155,28 @@ char eval(char *list)
     }
   else if(!strcmp(op, "elt"))
     {
-
+    }
+  else if(!strcmp(op, "convert"))
+    {
+    }
+  else if(!strcmp(op, "call-with-current-continuation"))
+    {
+    }
+  else
+    {
+      printf("Error");
+      return -1;
+    }
+  
+  return 0;
 }
 
 int main(void)
 {
-  int S[stack_size];
-  char E[list_size];
-  char C[one_code_size];
-  char D[list_size];
-  char list_test[]="((a) (b (c)))";
+  eval("(push 10)");
+  eval("(push 5)");
+  eval("(exch 1)");
+  eval("(add 1)");
+  eval("(pop 1)");
   return 0;
 }
